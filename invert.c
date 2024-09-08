@@ -44,10 +44,10 @@ int main()
     for (int j = i + 1; j < tamanho; j++)
     {
       Fraction n2 = matriz[j][i];
-      Fraction m = fdiv(n2, n);
+      Fraction m = fsimplify(fdiv(n2, n));
       for (int k = 0; k < tamanho * 2; k++)
       {
-        Fraction r = fsub(matriz[j][k], fmul(matriz[i][k], m));
+        Fraction r = fsimplify(fsub(matriz[j][k], fsimplify(fmul(matriz[i][k], m))));
         matriz[j][k] = r;
       }
     }
@@ -62,10 +62,10 @@ int main()
     for (int j = i - 1; j >= 0; j--)
     {
       Fraction n2 = matriz[j][i];
-      Fraction m = fdiv(n2, n);
+      Fraction m = fsimplify(fdiv(n2, n));
       for (int k = 0; k < tamanho * 2; k++)
       {
-        matriz[j][k] = fsub(matriz[j][k], fmul(matriz[i][k], m));
+        matriz[j][k] = fsimplify(fsub(matriz[j][k], fsimplify(fmul(matriz[i][k], m))));
       }
     }
     printf("\n");
@@ -79,7 +79,7 @@ int main()
     Fraction div = matriz[i][i];
     for (int j = 0; j < tamanho * 2; j++)
     {
-      matriz[i][j] = fdiv(matriz[i][j], div);
+      matriz[i][j] = fsimplify(fdiv(matriz[i][j], div));
       if (matriz[i][j].denominator == -0)
         matriz[i][j].denominator = 0;
     }
