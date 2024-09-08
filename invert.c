@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "fraction.h"
 
-void mostrarMatriz(float **matriz, int tamanho);
+void mostrarMatriz(Fraction **matriz, int tamanho);
 
 int main()
 {
@@ -9,9 +10,9 @@ int main()
   printf("Defina o tamanho da matriz (deve ser quadrada): ");
   scanf("%d", &tamanho);
 
-  float **matriz = (float **)malloc(tamanho * sizeof(float *));
+  Fraction **matriz = (Fraction **)malloc(tamanho * sizeof(Fraction *));
   for (int i = 0; i < tamanho; i++)
-    matriz[i] = (float *)malloc(tamanho * 2 * sizeof(float));
+    matriz[i] = (Fraction *)malloc(tamanho * 2 * sizeof(Fraction));
 
   printf("Ótimo. Uma matriz %dx%d foi criada. Agora, vamos definir os valores dela.\n", tamanho, tamanho);
   for (int i = 0; i < tamanho; i++)
@@ -19,7 +20,10 @@ int main()
     for (int j = 0; j < tamanho; j++)
     {
       printf("Linha %d, coluna %d: ", i + 1, j + 1);
-      scanf("%f", &matriz[i][j]);
+      int n;
+      scanf("%d", &n);
+      Fraction f = {n, 1};
+      matriz[i][j] = f;
     }
   }
 
@@ -28,21 +32,23 @@ int main()
   {
     for (int j = tamanho; j < tamanho * 2; j++)
     {
-      matriz[i][j] = i == j - tamanho ? 1 : 0;
+      Fraction f = {i == j - tamanho ? 1 : 0, 1};
+      matriz[i][j] = f;
     }
   }
 
   // subtrai as equações para tirar os números à esquerda
   for (int i = 0; i < tamanho - 1; i++)
   {
-    float n = matriz[i][i];
+    Fraction n = matriz[i][i];
     for (int j = i + 1; j < tamanho; j++)
     {
-      float n2 = matriz[j][i];
-      float m = -n2 / n;
+      Fraction n2 = matriz[j][i];
+      Fraction m = fdiv(n2, n);
       for (int k = 0; k < tamanho * 2; k++)
       {
-        matriz[j][k] += matriz[i][k] * m;
+        Fraction r = fsub(matriz[j][k], fmul(matriz[i][k], m));
+        matriz[j][k] = r;
       }
     }
     printf("\n");
@@ -52,14 +58,14 @@ int main()
   // subtrai as equações para tirar os números à direita
   for (int i = tamanho - 1; i > 0; i--)
   {
-    float n = matriz[i][i];
+    Fraction n = matriz[i][i];
     for (int j = i - 1; j >= 0; j--)
     {
-      float n2 = matriz[j][i];
-      float m = -n2 / n;
+      Fraction n2 = matriz[j][i];
+      Fraction m = fdiv(n2, n);
       for (int k = 0; k < tamanho * 2; k++)
       {
-        matriz[j][k] += matriz[i][k] * m;
+        matriz[j][k] = fsub(matriz[j][k], fmul(matriz[i][k], m));
       }
     }
     printf("\n");
@@ -70,12 +76,12 @@ int main()
   // em outras palavras, transforma a matriz da esquerda em identidade
   for (int i = 0; i < tamanho; i++)
   {
-    float div = matriz[i][i];
+    Fraction div = matriz[i][i];
     for (int j = 0; j < tamanho * 2; j++)
     {
-      matriz[i][j] /= div;
-      if (matriz[i][j] == -0)
-        matriz[i][j] = 0;
+      matriz[i][j] = fdiv(matriz[i][j], div);
+      if (matriz[i][j].denominator == -0)
+        matriz[i][j].denominator = 0;
     }
   }
 
@@ -88,13 +94,16 @@ int main()
   return 0;
 }
 
-void mostrarMatriz(float **matriz, int tamanho)
+void mostrarMatriz(Fraction **matriz, int tamanho)
 {
   for (int i = 0; i < tamanho; i++)
   {
     for (int j = 0; j < tamanho * 2; j++)
     {
-      printf("%7.2f ", matriz[i][j]);
+      Fraction f = fsimplify(matriz[i][j]);
+      if (f.denominator == 1) {
+        printf("%7d ", f.numerator);
+      } else printf("%5d/%d ", f.numerator, f.denominator);
     }
     printf("\n");
   }
